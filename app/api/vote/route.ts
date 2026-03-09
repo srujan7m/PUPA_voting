@@ -10,7 +10,7 @@ function getClientIp(request: NextRequest): string | null {
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Validate request body
+    // 1. Validate request body — accepts up to 3 team IDs
     const body = await request.json();
     const parsed = voteSchema.safeParse(body);
     if (!parsed.success) {
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const { teamId } = parsed.data;
+    const { teamIds } = parsed.data;
 
     // 2. Identify voter via browser UUID token
     const voterToken = request.headers.get('x-voter-token');
@@ -49,13 +49,13 @@ export async function POST(request: NextRequest) {
       update: { ipAddress: clientIp ?? undefined },
     });
 
-    // 5. Confirm team exists
-    const project = await prisma.project.findUnique({
-      where: { id: teamId },
+    // 5. Confirm all selected teams exist
+    const projects = await prisma.project.findMany({
+      where: { id: { in: teamIds } },
       select: { id: true },
     });
-    if (!project) {
-      return NextResponse.json({ error: 'Team not found.' }, { status: 404 });
+    if (projects.length !== teamIds.length) {
+      return NextResponse.json({ error: 'One or more selected teams were not found.' }, { status: 404 });
     }
 
     // 6. Check if voter already voted (token-level guard)
@@ -67,17 +67,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'You have already voted.' }, { status: 400 });
     }
 
-    // 7. Record vote and increment counter atomically
+    // 7. Record all votes and increment counters atomically
     await prisma.$transaction([
-      prisma.vote.create({ data: { voterId: voter.id, projectId: teamId } }),
-      prisma.project.update({
-        where: { id: teamId },
-        data: { voteCount: { increment: 1 } },
-      }),
+      ...teamIds.map((id) => prisma.vote.create({ data: { voterId: voter.id, projectId: id } })),
+      ...teamIds.map((id) =>
+        prisma.project.update({ where: { id }, data: { voteCount: { increment: 1 } } })
+      ),
     ]);
 
     return NextResponse.json(
-      { message: 'Your vote has been recorded.' },
+      { message: `Your ${teamIds.length === 1 ? 'vote has' : `${teamIds.length} votes have`} been recorded.` },
       { status: 201 }
     );
   } catch (error: any) {

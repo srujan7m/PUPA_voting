@@ -12,8 +12,6 @@ export async function GET(request: NextRequest) {
     const voterToken = request.headers.get('x-voter-token');
     const clientIp = getClientIp(request);
 
-    // Try to find voter by UUID token first, then fall back to IP.
-    // This means even after a cache clear the user still sees "already voted".
     let voter = voterToken
       ? await prisma.voter.findUnique({ where: { clerkUserId: voterToken } })
       : null;
@@ -23,10 +21,10 @@ export async function GET(request: NextRequest) {
     }
 
     if (!voter) {
-      return NextResponse.json({ hasVoted: false });
+      return NextResponse.json({ hasVoted: false, votedTeamIds: [] });
     }
 
-    const vote = await prisma.vote.findFirst({
+    const votes = await prisma.vote.findMany({
       where: { voterId: voter.id },
       select: {
         projectId: true,
@@ -34,14 +32,13 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    if (!vote) {
-      return NextResponse.json({ hasVoted: false });
+    if (votes.length === 0) {
+      return NextResponse.json({ hasVoted: false, votedTeamIds: [] });
     }
 
     return NextResponse.json({
       hasVoted: true,
-      projectId: vote.projectId,
-      projectName: vote.project.teamName ?? vote.project.name,
+      votedTeamIds: votes.map((v) => v.projectId),
     });
   } catch (error) {
     console.error('[GET /api/votes/status]', error);

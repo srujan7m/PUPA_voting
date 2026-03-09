@@ -1,8 +1,7 @@
 ﻿'use client';
 
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Users } from 'lucide-react';
 
 export interface Team {
   id: number;
@@ -11,85 +10,105 @@ export interface Team {
   team_number: number;
   description: string;
   vote_count: number;
+  image_url?: string;
+  stall_images?: string[];
+  team_members?: string;
+  demo_video_url?: string;
 }
 
 interface TeamCardProps {
   team: Team;
-  onVote?: (teamId: number) => void;
-  hasVoted?: boolean;
-  votedTeamId?: number | null;
+  /** Called when the card body is clicked — used to open detail/preview popup */
+  onClick?: (team: Team) => void;
+  /** IDs of teams the voter has permanently voted for */
+  votedTeamIds?: number[];
+  /** IDs currently selected (pre-submission) */
+  selectedIds?: number[];
   index?: number;
 }
 
-export default function TeamCard({ team, onVote, hasVoted, votedTeamId, index = 0 }: TeamCardProps) {
-  const router = useRouter();
-  const isVotedThis = votedTeamId === team.id;
-  const isDisabled = hasVoted && !isVotedThis;
+export default function TeamCard({ team, onClick, votedTeamIds = [], selectedIds = [], index = 0 }: TeamCardProps) {
+  const isVoted = votedTeamIds.includes(team.id);
+  const isSelected = selectedIds.includes(team.id);
+  const hasVoted = votedTeamIds.length > 0;
+  const isDisabled = hasVoted && !isVoted;
   const num = team.team_number || team.id;
+  const displayName = team.team_name || `Team #${num}`;
+  const primaryImage = (team.stall_images && team.stall_images.length > 0)
+    ? team.stall_images[0]
+    : team.image_url;
+
+  const active = isVoted || isSelected;
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.92 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: Math.min(index * 0.008, 0.4), duration: 0.22 }}
-      whileHover={isDisabled ? {} : { y: -2, transition: { duration: 0.15 } }}
-      className="h-full"
-      style={{ opacity: isDisabled ? 0.5 : 1, pointerEvents: isDisabled ? 'none' : 'auto' }}
+      transition={{ delay: Math.min(index * 0.006, 0.3), duration: 0.2 }}
+      whileHover={isDisabled ? {} : { y: -3, transition: { duration: 0.15 } }}
+      style={{ opacity: isDisabled ? 0.45 : 1, cursor: isDisabled ? 'not-allowed' : 'pointer' }}
+      onClick={() => !isDisabled && onClick?.(team)}
     >
       <div
-        onClick={() => router.push(`/team/${team.id}`)}
-        className="flex flex-col items-center gap-[0.45rem] py-3 px-2.5 text-center cursor-pointer transition-all duration-150 min-h-[82px] rounded-[16px]"
+        className="flex flex-col rounded-2xl overflow-hidden transition-all duration-150 select-none"
         style={{
-          background: isVotedThis ? 'var(--amber-50)' : 'var(--cream-card)',
-          border: isVotedThis
-            ? '1.5px solid var(--amber-400)'
+          background: active ? 'var(--amber-50)' : 'var(--cream-card)',
+          border: active
+            ? '2px solid var(--amber-400)'
             : '1.5px solid var(--stone-200)',
-          boxShadow: isVotedThis
-            ? '0 0 0 2px rgba(245,158,11,0.15), var(--shadow-md)'
+          boxShadow: active
+            ? '0 0 0 3px rgba(245,158,11,0.12), var(--shadow-md)'
             : 'var(--shadow-sm)',
         }}
       >
-        {/* Team number */}
-        <div className="flex items-center gap-0.5">
-          <span className="text-[0.82rem] font-bold" style={{ color: 'var(--amber-600)' }}>#</span>
-          <span className="text-[0.82rem] font-bold" style={{ color: 'var(--stone-800)' }}>{num}</span>
-          {isVotedThis && (
-            <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 300 }}>
-              <CheckCircle2 className="w-3 h-3 ml-0.5" style={{ color: 'var(--amber-500)' }} />
-            </motion.span>
+        {/* Team image or placeholder */}
+        <div
+          className="w-full aspect-4/3 flex items-center justify-center relative overflow-hidden"
+          style={{ background: active ? 'var(--amber-100)' : 'var(--stone-100)' }}
+        >
+          {primaryImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={primaryImage}
+              alt={displayName}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{ background: active ? 'var(--amber-200)' : 'var(--stone-200)' }}
+            >
+              <Users className="w-4 h-4" style={{ color: active ? 'var(--amber-600)' : 'var(--stone-400)' }} />
+            </div>
+          )}
+
+          {/* Selection / voted badge */}
+          {(isSelected || isVoted) && (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+              className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center"
+              style={{ background: 'var(--amber-500)' }}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+            </motion.div>
           )}
         </div>
 
-        {/* Vote button */}
-        {onVote && (
-          <button
-            onClick={(e) => { e.stopPropagation(); if (!hasVoted) onVote(team.id); }}
-            disabled={isDisabled}
-            className="text-[0.7rem] font-semibold px-2.5 py-[0.22rem] rounded-[6px] transition-all duration-150 whitespace-nowrap"
-            style={{
-              border: isVotedThis ? '1px solid var(--amber-400)' : '1px solid var(--stone-300)',
-              background: isVotedThis ? 'var(--amber-100)' : '#fff',
-              color: isVotedThis ? 'var(--amber-600)' : 'var(--stone-600)',
-              cursor: isDisabled ? 'not-allowed' : 'pointer',
-            }}
-            onMouseEnter={(e) => {
-              if (!isVotedThis && !isDisabled) {
-                (e.currentTarget as HTMLElement).style.borderColor = 'var(--amber-400)';
-                (e.currentTarget as HTMLElement).style.color = 'var(--amber-600)';
-                (e.currentTarget as HTMLElement).style.background = 'var(--amber-50)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isVotedThis && !isDisabled) {
-                (e.currentTarget as HTMLElement).style.borderColor = 'var(--stone-300)';
-                (e.currentTarget as HTMLElement).style.color = 'var(--stone-600)';
-                (e.currentTarget as HTMLElement).style.background = '#fff';
-              }
-            }}
+        {/* Info strip */}
+        <div className="px-2 py-2 text-center">
+          <p className="text-[0.62rem] font-bold" style={{ color: 'var(--amber-600)' }}>
+            #{num}
+          </p>
+          <p
+            className="text-[0.72rem] font-semibold leading-tight truncate"
+            style={{ color: 'var(--stone-800)' }}
+            title={displayName}
           >
-            {isVotedThis ? '✓ Voted' : 'Vote'}
-          </button>
-        )}
+            {displayName}
+          </p>
+        </div>
       </div>
     </motion.div>
   );

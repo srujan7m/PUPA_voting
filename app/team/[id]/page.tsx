@@ -1,16 +1,16 @@
 ﻿'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { useParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import VoteModal from '@/components/VoteModal';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
-import { fetchTeam, fetchVoteStatus, submitVote } from '@/lib/api';
-import { ArrowLeft, Users, ThumbsUp, Video, User } from 'lucide-react';
+import { fetchTeam, fetchVoteStatus, submitVotes } from '@/lib/api';
+import { ArrowLeft, Users, ThumbsUp, Video, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface TeamDetail {
   id: number;
@@ -21,13 +21,12 @@ interface TeamDetail {
   vote_count: number;
   team_members: string;
   demo_video_url?: string;
+  image_url?: string;
+  stall_images?: string[];
 }
-
-
 
 export default function TeamDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const { toast } = useToast();
 
   const [team, setTeam] = useState<TeamDetail | null>(null);
@@ -36,6 +35,7 @@ export default function TeamDetailPage() {
   const [isVoting, setIsVoting] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const [voteSuccess, setVoteSuccess] = useState(false);
+  const [imgIdx, setImgIdx] = useState(0);
 
   useEffect(() => {
     const id = params.id as string;
@@ -62,10 +62,10 @@ export default function TeamDetailPage() {
 
     setIsVoting(true);
     try {
-      await submitVote(team.id);
+      await submitVotes([team.id]);
       setHasVoted(true);
       setVoteSuccess(true);
-      toast({ title: 'ðŸŽ‰ Vote recorded!', description: 'Your vote has been successfully cast.' });
+      toast({ title: '🎉 Vote recorded!', description: 'Your vote has been successfully cast.' });
     } catch (err: any) {
       toast({
         title: 'Unable to vote',
@@ -102,8 +102,10 @@ export default function TeamDetailPage() {
   const members = team.team_members
     ? team.team_members.split(',').map((m) => m.trim()).filter(Boolean)
     : [];
-  const displayName = team.team_name || team.name;
-
+  const displayName = team.team_name || `Team #${team.team_number || team.id}`;
+  const images: string[] = team.stall_images && team.stall_images.length > 0
+    ? team.stall_images
+    : team.image_url ? [team.image_url] : [];
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
@@ -116,6 +118,69 @@ export default function TeamDetailPage() {
           <ArrowLeft className="w-4 h-4" />
           Back to Teams
         </Link>
+
+        {/* Stall image gallery */}
+        {images.length > 0 && (
+          <div className="bg-[#FFF9F2] rounded-2xl border border-[#D6C7B4] overflow-hidden mb-6">
+            <div className="relative" style={{ aspectRatio: '16/7' }}>
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={imgIdx}
+                  src={images[imgIdx]}
+                  alt={`${displayName} stall`}
+                  className="w-full h-full object-cover"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                />
+              </AnimatePresence>
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setImgIdx((i) => (i - 1 + images.length) % images.length)}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center"
+                    style={{ background: 'rgba(0,0,0,0.42)' }}
+                  >
+                    <ChevronLeft className="w-5 h-5 text-white" />
+                  </button>
+                  <button
+                    onClick={() => setImgIdx((i) => (i + 1) % images.length)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center"
+                    style={{ background: 'rgba(0,0,0,0.42)' }}
+                  >
+                    <ChevronRight className="w-5 h-5 text-white" />
+                  </button>
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                    {images.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setImgIdx(i)}
+                        className="w-2 h-2 rounded-full"
+                        style={{ background: i === imgIdx ? '#F59E0B' : 'rgba(255,255,255,0.55)' }}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+            {images.length > 1 && (
+              <div className="flex gap-2 p-3 overflow-x-auto">
+                {images.map((src, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setImgIdx(i)}
+                    className="shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2"
+                    style={{ borderColor: i === imgIdx ? '#F59E0B' : 'transparent' }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Hero card */}
         <div className="bg-[#FFF9F2] rounded-2xl border border-[#D6C7B4] p-8 mb-6">
@@ -185,7 +250,7 @@ export default function TeamDetailPage() {
         {/* Vote CTA */}
         {hasVoted ? (
           <div className="w-full bg-[#FFF9F2] border border-[#D6C7B4] rounded-2xl p-5 text-center">
-            <p className="text-[#4A2C24] font-semibold">âœ“ You have already cast your vote</p>
+            <p className="text-[#4A2C24] font-semibold">✓ You have already cast your vote</p>
           </div>
         ) : (
           <Button
@@ -207,7 +272,13 @@ export default function TeamDetailPage() {
         onViewDetails={() => setShowModal(false)}
         team={
           team
-            ? { name: displayName, description: team.description, team_number: team.team_number || team.id }
+            ? {
+                name: displayName,
+                description: team.description,
+                team_number: team.team_number || team.id,
+                image_url: team.image_url,
+                stall_images: team.stall_images,
+              }
             : null
         }
         isVoting={isVoting}

@@ -9,7 +9,7 @@ export async function GET() {
     });
 
     const data = teams.map((team: (typeof teams)[number]) => {
-      const { _count, teamNumber, teamName, demoVideoUrl, imageUrl, voteCount, teamMembers, createdAt, updatedAt, ...rest } = team;
+      const { _count, teamNumber, teamName, demoVideoUrl, imageUrl, stallImages, voteCount, teamMembers, editPin, createdAt, updatedAt, ...rest } = team;
       return {
         ...rest,
         team_number: teamNumber,
@@ -17,6 +17,7 @@ export async function GET() {
         team_members: teamMembers,
         demo_video_url: demoVideoUrl,
         image_url: imageUrl,
+        stall_images: stallImages ? JSON.parse(stallImages) : [],
         vote_count: _count.votes,
       };
     });

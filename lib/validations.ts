@@ -1,7 +1,20 @@
 import { z } from 'zod';
 
 export const voteSchema = z.object({
-  teamId: z.number().int().positive('Invalid team ID'),
+  teamIds: z
+    .array(z.number().int().positive('Invalid team ID'))
+    .min(1, 'Select at least one team to vote for.')
+    .max(3, 'You can vote for at most 3 teams.')
+    .refine((ids) => new Set(ids).size === ids.length, 'Duplicate team selections are not allowed.'),
+});
+
+export const teamUpdateSchema = z.object({
+  teamName: z.string().min(1).max(255).optional(),
+  description: z.string().max(2000).optional(),
+  teamMembers: z.string().max(1000).optional(),
+  stallImages: z.array(z.string().url().or(z.string().startsWith('/'))).max(5).optional(),
+  editPin: z.string().min(4).max(64).optional(),
+  currentPin: z.string().optional(),
 });
 
 /** Formats Zod field errors into a single human-readable string. */

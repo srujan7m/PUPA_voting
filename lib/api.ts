@@ -22,9 +22,28 @@ api.interceptors.request.use((config) => {
 // Teams
 export const fetchTeams = () => api.get('/api/teams');
 export const fetchTeam = (id: number | string) => api.get(`/api/team/${id}`);
+export const updateTeamProfile = (
+  id: number | string,
+  data: { teamName?: string; description?: string; teamMembers?: string; stallImages?: string[]; editPin?: string; currentPin?: string }
+) => api.patch(`/api/team/${id}`, data);
 
-// Voting
-export const submitVote = (teamId: number) => api.post('/api/vote', { teamId });
+// File upload — use native fetch so the browser sets multipart/form-data with
+// the correct boundary automatically. Axios can interfere with FormData headers.
+export const uploadImage = async (file: File): Promise<{ data: { url: string } }> => {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch('/api/upload', { method: 'POST', body: form });
+  const json = await res.json();
+  if (!res.ok) {
+    const err: any = new Error(json.error || 'Upload failed');
+    err.response = { data: json };
+    throw err;
+  }
+  return { data: json };
+};
+
+// Voting — accepts 1-3 team IDs in a single submission
+export const submitVotes = (teamIds: number[]) => api.post('/api/vote', { teamIds });
 export const fetchVoteStatus = () => api.get('/api/votes/status');
 
 // Leaderboard

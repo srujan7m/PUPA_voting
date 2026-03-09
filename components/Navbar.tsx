@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Trophy, Users, Zap } from 'lucide-react';
+import { Trophy, Users, Zap, Settings } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -11,6 +11,7 @@ export default function Navbar() {
   const navLinks = [
     { href: '/teams', label: 'Teams', icon: Users },
     { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+    { href: '/setup', label: 'Setup', icon: Settings },
   ];
 
   return (
