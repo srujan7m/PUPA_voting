@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -54,32 +54,55 @@ export default function TeamsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
+    <div className="px-8 py-12" style={{ background: 'var(--cream)', minHeight: '100vh' }}>
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-linear-to-br from-[#F59E0B] to-[#D97706] rounded-xl flex items-center justify-center">
-            <Users className="w-5 h-5 text-white" />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+        className="flex flex-wrap items-start justify-between gap-4 mb-8"
+      >
+        <div className="flex items-center gap-4">
+          <div
+            className="w-12 h-12 rounded-[10px] flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, var(--amber-400), var(--amber-600))', boxShadow: 'var(--shadow-amber)' }}
+          >
+            <Users className="w-[22px] h-[22px] text-white" />
           </div>
-          <h1 className="text-4xl font-extrabold text-[#3B2A25]">All Teams</h1>
+          <div>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.9rem', color: 'var(--stone-900)', lineHeight: 1.1 }}>
+              All Teams
+            </h1>
+            <p className="text-[0.875rem] mt-0.5" style={{ color: 'var(--stone-500)' }}>
+              {hasVoted
+                ? '✓ You have already cast your vote — thanks for participating!'
+                : '180 teams · sorted by team number · click any card to view details'}
+            </p>
+          </div>
         </div>
-        <p className="text-[#6B5B55]">
-          {hasVoted
-            ? '✓ You have already cast your vote. Thanks for participating!'
-            : 'Browse all 166 teams and cast your vote.'}
-        </p>
+        {hasVoted && (
+          <div
+            className="flex items-center gap-1.5 text-[0.75rem] font-semibold px-3 py-1.5 rounded-full"
+            style={{ background: 'var(--amber-100)', color: 'var(--amber-700)', border: '1px solid var(--amber-200)' }}
+          >
+            <span>✓</span> Voted
+          </div>
+        )}
       </motion.div>
 
       {loading ? (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-          {[...Array(16)].map((_, i) => (
-            <div key={i} className="h-24 bg-[#D6C7B4] rounded-xl animate-pulse" />
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+          {[...Array(24)].map((_, i) => (
+            <div key={i} className="h-[82px] rounded-[16px] skeleton-shimmer" />
           ))}
         </div>
       ) : teams.length === 0 ? (
-        <div className="text-center py-24 text-[#6B5B55]">No teams found.</div>
+        <div className="text-center py-24" style={{ color: 'var(--stone-500)' }}>No teams found.</div>
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+        <motion.div
+          initial="hidden"
+          animate="show"
+          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.006 } } }}
+          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2"
+        >
           {teams.map((team, index) => (
             <TeamCard
               key={team.id}
@@ -90,7 +113,7 @@ export default function TeamsPage() {
               votedTeamId={votedTeamId}
             />
           ))}
-        </div>
+        </motion.div>
       )}
 
       <Toaster />

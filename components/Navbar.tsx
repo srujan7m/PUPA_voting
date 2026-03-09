@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -14,46 +14,70 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-[#FFF9F2]/90 backdrop-blur-md border-b border-[#D6C7B4]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="w-8 h-8 bg-linear-to-br from-[#F59E0B] to-[#D97706] rounded-lg flex items-center justify-center shadow-lg shadow-[#F59E0B]/20"
-            >
-              <Zap className="w-4 h-4 text-white" />
-            </motion.div>
-            <span className="font-bold text-[#4A2C24] text-lg tracking-tight group-hover:text-[#F59E0B] transition-colors">
-              PUPA Expo
-            </span>
-          </Link>
-
-          {/* Nav Links */}
-          <div className="flex items-center gap-1">
-            {navLinks.map(({ href, label, icon: Icon }) => {
-              const isActive = pathname === href || pathname.startsWith(href + '/');
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                    isActive
-                      ? 'text-[#4A2C24] bg-[#F59E0B]/15'
-                      : 'text-[#6B5B55] hover:text-[#4A2C24] hover:bg-[#F59E0B]/10'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{label}</span>
-                </Link>
-              );
-            })}
-
-
-          </div>
+    <motion.nav
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="sticky top-0 z-50 h-16 flex items-center justify-between px-8"
+      style={{
+        background: 'rgba(253,250,244,0.82)',
+        backdropFilter: 'blur(18px) saturate(1.4)',
+        WebkitBackdropFilter: 'blur(18px) saturate(1.4)',
+        borderBottom: '1px solid rgba(245,158,11,0.15)',
+      }}
+    >
+      {/* Logo */}
+      <Link href="/" className="flex items-center gap-2 group no-underline">
+        <div
+          className="w-8 h-8 rounded-[9px] flex items-center justify-center"
+          style={{
+            background: 'linear-gradient(135deg, var(--amber-500), var(--amber-600))',
+            boxShadow: '0 2px 8px rgba(245,158,11,0.4)',
+          }}
+        >
+          <Zap className="w-4 h-4 text-white" />
         </div>
+        <span
+          className="text-[1.15rem] tracking-[-0.01em] transition-colors group-hover:text-[var(--amber-600)]"
+          style={{ fontFamily: "'DM Serif Display', serif", color: 'var(--stone-900)' }}
+        >
+          PUPA Expo
+        </span>
+      </Link>
+
+      {/* Nav links */}
+      <div className="flex items-center gap-1">
+        {navLinks.map(({ href, label, icon: Icon }) => {
+          const isActive = pathname === href || pathname.startsWith(href + '/');
+          return (
+            <Link
+              key={href}
+              href={href}
+              className="flex items-center gap-1.5 px-[0.9rem] py-[0.45rem] rounded-[8px] text-sm font-medium transition-all duration-150 no-underline"
+              style={{
+                background: isActive ? 'var(--amber-100)' : 'transparent',
+                color: isActive ? 'var(--amber-700)' : 'var(--stone-600)',
+                fontWeight: isActive ? 600 : 500,
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLElement).style.background = 'var(--amber-50)';
+                  (e.currentTarget as HTMLElement).style.color = 'var(--amber-600)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLElement).style.background = 'transparent';
+                  (e.currentTarget as HTMLElement).style.color = 'var(--stone-600)';
+                }
+              }}
+            >
+              <Icon className="w-[15px] h-[15px]" />
+              <span className="hidden sm:inline">{label}</span>
+            </Link>
+          );
+        })}
       </div>
-    </nav>
+    </motion.nav>
   );
 }

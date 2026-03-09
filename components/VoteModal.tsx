@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ThumbsUp, CheckCircle, Loader2 } from 'lucide-react';
+import { ThumbsUp, CheckCircle, Loader2, X } from 'lucide-react';
 
 interface VoteModalProps {
   isOpen: boolean;
@@ -24,117 +24,122 @@ interface VoteModalProps {
   hasVoted?: boolean;
 }
 
-export default function VoteModal({
-  isOpen,
-  onClose,
-  onVote,
-  onViewDetails,
-  team,
-  isVoting,
-  hasVoted,
-}: VoteModalProps) {
+export default function VoteModal({ isOpen, onClose, onVote, onViewDetails, team, isVoting, hasVoted }: VoteModalProps) {
   if (!team) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-[#FFF9F2] border-[#D6C7B4] text-[#3B2A25] max-w-md p-0 overflow-hidden">
+      <DialogContent
+        className="p-0 overflow-hidden max-w-[420px] border-0"
+        style={{ background: 'var(--cream)', borderRadius: 'var(--r-xl)', boxShadow: '0 24px 64px rgba(0,0,0,0.18)' }}
+      >
         <DialogTitle className="sr-only">Vote for {team.name}</DialogTitle>
         <DialogDescription className="sr-only">
           Cast your vote for {team.name} at PUPA Innovation Expo
         </DialogDescription>
 
-        {/* Gradient header strip */}
-        <div className="h-1.5 bg-linear-to-r from-[#F59E0B] via-[#D97706] to-[#4A2C24]" />
+        {/* Shimmer strip */}
+        <div
+          className="h-1.5 w-full"
+          style={{
+            background: 'linear-gradient(90deg, var(--amber-400), var(--amber-600), var(--amber-400))',
+            backgroundSize: '200% 100%',
+            animation: 'shimmerStrip 2s linear infinite',
+          }}
+        />
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.96 }}
-          transition={{ duration: 0.25 }}
-          className="p-8 space-y-6"
-        >
+        <AnimatePresence mode="wait">
           {hasVoted ? (
-            <div className="text-center py-4 space-y-4">
+            <motion.div
+              key="success"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.25 }}
+              className="px-8 pt-8 pb-10 text-center"
+            >
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                style={{ background: '#DCFCE7' }}
               >
-                <CheckCircle className="w-20 h-20 text-green-400 mx-auto" />
+                <CheckCircle className="w-7 h-7" style={{ color: 'var(--green-500)' }} />
               </motion.div>
-              <div>
-                <h2 className="text-2xl font-extrabold text-[#3B2A25]">Vote Recorded!</h2>
-                <p className="text-[#6B5B55] mt-2 text-sm">
-                  Your vote for <span className="text-[#3B2A25] font-semibold">{team.name}</span> has
-                  been successfully cast.
-                </p>
-              </div>
+              <h2 className="mb-2" style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.4rem', color: 'var(--stone-900)' }}>
+                Vote Recorded!
+              </h2>
+              <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--stone-500)' }}>
+                Your vote for{' '}
+                <span className="font-semibold" style={{ color: 'var(--stone-800)' }}>{team.name}</span>{' '}
+                has been successfully recorded. Thank you for participating!
+              </p>
               <Button
                 onClick={onClose}
-                className="w-full bg-[#4A2C24] hover:bg-[#3B2A25] text-white font-semibold h-11"
+                className="w-full h-11 font-semibold text-white"
+                style={{ background: 'linear-gradient(135deg, var(--amber-500), var(--amber-600))', border: 'none', boxShadow: 'var(--shadow-amber)' }}
               >
                 Done
               </Button>
-            </div>
+            </motion.div>
           ) : (
-            <>
-              {/* Icon + Title */}
-              <div className="text-center space-y-3">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 200 }}
-                  className="w-16 h-16 bg-linear-to-br from-[#F59E0B] to-[#D97706] rounded-2xl flex items-center justify-center mx-auto shadow-xl shadow-[#F59E0B]/20"
-                >
-                  <ThumbsUp className="w-8 h-8 text-white" />
-                </motion.div>
-                <div>
-                  <p className="text-xs font-medium text-[#F59E0B] uppercase tracking-widest mb-1">
-                    Team #{team.team_number}
-                  </p>
-                  <h2 className="text-2xl font-extrabold text-[#3B2A25]">Vote for this Team?</h2>
-                </div>
-              </div>
+            <motion.div
+              key="confirm"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.25 }}
+              className="px-8 pt-7 pb-8"
+            >
+              <h2 className="mb-1" style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.3rem', color: 'var(--stone-900)' }}>
+                Cast Your Vote
+              </h2>
+              <p className="text-[0.85rem] mb-5" style={{ color: 'var(--stone-500)' }}>
+                You can only vote once. Choose wisely!
+              </p>
 
-              {/* Team preview card */}
-              <div className="bg-[#E8DCCB] border border-[#D6C7B4] rounded-xl p-4 space-y-1">
-                <h3 className="font-bold text-[#3B2A25] text-base">{team.name}</h3>
-                <p className="text-[#6B5B55] text-sm leading-relaxed line-clamp-3">
-                  {team.description}
+              {/* Team preview */}
+              <div
+                className="rounded-[16px] px-5 py-4 mb-5"
+                style={{ background: 'var(--amber-50)', border: '1px solid var(--amber-200)' }}
+              >
+                {team.team_number && (
+                  <p className="text-[0.75rem] font-bold tracking-[0.06em] mb-1" style={{ color: 'var(--amber-600)' }}>
+                    TEAM #{team.team_number}
+                  </p>
+                )}
+                <p className="font-bold mb-1.5" style={{ color: 'var(--stone-800)', fontSize: '1rem' }}>
+                  {team.name}
+                </p>
+                <p className="text-[0.82rem] leading-[1.6]" style={{ color: 'var(--stone-500)' }}>
+                  {team.description?.substring(0, 120)}{team.description?.length > 120 ? '…' : ''}
                 </p>
               </div>
 
-              <p className="text-xs text-[#7A5A4F] text-center">
-                You can only vote once. This action cannot be undone.
-              </p>
-
-              {/* Action buttons */}
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={onViewDetails}
-                  className="flex-1 border-[#4A2C24] text-[#4A2C24] hover:bg-[#4A2C24] hover:text-white"
-                >
-                  See Full Details
-                </Button>
+              {/* Actions */}
+              <div className="flex gap-2">
                 <Button
                   onClick={onVote}
                   disabled={isVoting}
-                  className="flex-1 bg-[#F59E0B] hover:bg-[#D97706] text-white font-semibold gap-2"
+                  className="flex-1 gap-2 font-semibold text-white"
+                  style={{ background: 'linear-gradient(135deg, var(--amber-500), var(--amber-600))', border: 'none', boxShadow: 'var(--shadow-amber)' }}
                 >
-                  {isVoting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Voting...
-                    </>
-                  ) : (
-                    'Vote Now'
-                  )}
+                  {isVoting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsUp className="w-4 h-4" />}
+                  {isVoting ? 'Voting…' : 'Vote for This Team'}
+                </Button>
+                <Button
+                  onClick={onClose}
+                  variant="outline"
+                  className="font-semibold transition-all duration-150 hover:text-amber-600 hover:border-amber-400 hover:bg-[var(--amber-50)]"
+                  style={{ borderColor: 'var(--stone-300)', color: 'var(--stone-700)', background: 'transparent' }}
+                >
+                  Cancel
                 </Button>
               </div>
-            </>
+            </motion.div>
           )}
-        </motion.div>
+        </AnimatePresence>
       </DialogContent>
     </Dialog>
   );
