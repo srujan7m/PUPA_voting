@@ -1,0 +1,49 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider  = "postgresql"
+    url       = env("DATABASE_URL")
+    directUrl = env("DIRECT_URL")
+}
+
+model Voter {
+    id          Int      @id @default(autoincrement())
+    clerkUserId String   @unique @map("clerk_user_id")
+    ipAddress   String?  @unique @map("ip_address")
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+    votes       Vote[]
+
+    @@map("voters")
+}
+
+model Project {
+    id           Int      @id @default(autoincrement())
+    name         String   @db.VarChar(255)
+    description  String?  @db.Text
+    teamName     String?  @map("team_name") @db.VarChar(255)
+    teamNumber   Int?     @map("team_number")
+    teamMembers  String?  @map("team_members") @db.Text
+    demoVideoUrl String?  @map("demo_video_url") @db.VarChar(500)
+    voteCount    Int      @default(0) @map("vote_count")
+    imageUrl     String?  @map("image_url") @db.VarChar(500)
+    createdAt    DateTime @default(now()) @map("created_at")
+    updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+    votes        Vote[]
+
+    @@map("projects")
+}
+
+model Vote {
+    id        Int      @id @default(autoincrement())
+    voterId   Int      @map("voter_id")
+    projectId Int      @map("project_id")
+    votedAt   DateTime @default(now()) @map("voted_at")
+    voter     Voter    @relation(fields: [voterId], references: [id], onDelete: Cascade)
+    project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+    @@unique([voterId, projectId])
+    @@map("votes")
+}
