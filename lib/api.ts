@@ -42,11 +42,9 @@ export const uploadImage = async (file: File): Promise<{ data: { url: string } }
   return { data: json };
 };
 
-// Voting — accepts 1-3 team IDs in a single submission
-export const submitVotes = (teamIds: number[]) => api.post('/api/vote', { teamIds });
+// Voting — voter submits selection + mobile number for admin verification
+export const submitPendingVote = (teamIds: number[], mobileNumber: string) =>
+  api.post('/api/votes/pending', { teamIds, mobileNumber });
 export const fetchVoteStatus = () => api.get('/api/votes/status');
-
-// Leaderboard
-export const fetchLeaderboard = () => api.get('/api/leaderboard');
 
 export default api;

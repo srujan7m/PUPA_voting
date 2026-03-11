@@ -1,4 +1,4 @@
--- PUPA Innovation Expo Voting System - Database Schema
+-- PUPA Makers Movement Voting System - Database Schema
 
 -- Create voters table
 CREATE TABLE IF NOT EXISTS voters (

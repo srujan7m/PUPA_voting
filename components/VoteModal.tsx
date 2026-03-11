@@ -41,7 +41,7 @@ export default function VoteModal({ isOpen, onClose, onVote, team, isVoting, has
       >
         <DialogTitle className="sr-only">Vote for {team.name}</DialogTitle>
         <DialogDescription className="sr-only">
-          Cast your vote for {team.name} at PUPA Innovation Expo
+          Cast your vote for {team.name} at PUPA Makers Movement
         </DialogDescription>
 
         {/* Shimmer strip */}

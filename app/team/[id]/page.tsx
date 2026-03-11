@@ -9,8 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import VoteModal from '@/components/VoteModal';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
-import { fetchTeam, fetchVoteStatus, submitVotes } from '@/lib/api';
-import { ArrowLeft, Users, ThumbsUp, Video, ChevronLeft, ChevronRight } from 'lucide-react';
+import { fetchTeam, fetchVoteStatus, submitPendingVote } from '@/lib/api';
+import { ArrowLeft, Users, ThumbsUp, Video, ChevronLeft, ChevronRight, Phone, Loader2 as Loader } from 'lucide-react';
 
 interface TeamDetail {
   id: number;
@@ -35,7 +35,12 @@ export default function TeamDetailPage() {
   const [isVoting, setIsVoting] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const [voteSuccess, setVoteSuccess] = useState(false);
+  const [voteStatus, setVoteStatus] = useState<'none'|'pending'|'approved'|'denied'>('none');
   const [imgIdx, setImgIdx] = useState(0);
+  // Mobile dialog
+  const [showMobileDialog, setShowMobileDialog] = useState(false);
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [mobileError, setMobileError] = useState('');
 
   useEffect(() => {
     const id = params.id as string;
@@ -53,26 +58,40 @@ export default function TeamDetailPage() {
     }
 
     fetchVoteStatus()
-      .then((res) => { if (res.data.hasVoted) setHasVoted(true); })
+      .then((res) => {
+        const { status } = res.data;
+        setVoteStatus(status ?? 'none');
+        if (status === 'approved') setHasVoted(true);
+      })
       .catch(console.error);
   }, [params.id]);
 
-  const handleVote = async () => {
+  // Step 1: open mobile dialog from VoteModal
+  const handleVote = () => {
     if (!team) return;
+    setShowModal(false);
+    setMobileNumber('');
+    setMobileError('');
+    setShowMobileDialog(true);
+  };
 
+  // Step 2: confirm mobile number and submit pending vote
+  const handleConfirmMobile = async () => {
+    if (!team) return;
+    const cleaned = mobileNumber.replace(/\s/g, '');
+    if (!/^\+?[6-9][0-9]{9,12}$/.test(cleaned)) {
+      setMobileError('Enter a valid 10-digit mobile number.');
+      return;
+    }
     setIsVoting(true);
+    setMobileError('');
     try {
-      await submitVotes([team.id]);
-      setHasVoted(true);
-      setVoteSuccess(true);
-      toast({ title: '🎉 Vote recorded!', description: 'Your vote has been successfully cast.' });
+      await submitPendingVote([team.id], cleaned);
+      setShowMobileDialog(false);
+      setVoteStatus('pending');
+      toast({ title: '⏳ Vote submitted for verification', description: 'Show your phone to the admin at the voter desk.' });
     } catch (err: any) {
-      toast({
-        title: 'Unable to vote',
-        description: err.response?.data?.error || 'You have already voted.',
-        variant: 'destructive',
-      });
-      setShowModal(false);
+      setMobileError(err.response?.data?.error || 'Something went wrong.');
     } finally {
       setIsVoting(false);
     }
@@ -248,9 +267,27 @@ export default function TeamDetailPage() {
         )}
 
         {/* Vote CTA */}
-        {hasVoted ? (
+        {voteStatus === 'approved' || hasVoted ? (
           <div className="w-full bg-[#FFF9F2] border border-[#D6C7B4] rounded-2xl p-5 text-center">
-            <p className="text-[#4A2C24] font-semibold">✓ You have already cast your vote</p>
+            <p className="text-[#4A2C24] font-semibold">✓ Your vote has been approved</p>
+          </div>
+        ) : voteStatus === 'pending' ? (
+          <div className="w-full bg-[#FFFBEB] border border-[#FDE68A] rounded-2xl p-5 text-center">
+            <p className="text-[#92400E] font-semibold">⏳ Waiting for admin approval at the voter desk</p>
+          </div>
+        ) : voteStatus === 'denied' ? (
+          <div className="flex flex-col gap-3">
+            <div className="w-full bg-[#FEF2F2] border border-[#FECACA] rounded-2xl p-5 text-center">
+              <p className="text-[#991B1B] font-semibold">✗ Vote was denied — you may try again</p>
+            </div>
+            <Button
+              onClick={() => setShowModal(true)}
+              size="lg"
+              className="w-full h-14 text-base font-bold bg-[#F59E0B] hover:bg-[#D97706] text-white shadow-xl shadow-[#F59E0B]/20 gap-2 transition-all duration-300"
+            >
+              <ThumbsUp className="w-5 h-5" />
+              Vote Again
+            </Button>
           </div>
         ) : (
           <Button
@@ -284,6 +321,60 @@ export default function TeamDetailPage() {
         isVoting={isVoting}
         hasVoted={voteSuccess}
       />
+
+      {/* Mobile number dialog */}
+      <AnimatePresence>
+        {showMobileDialog && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4 pb-4 sm:pb-0"
+            style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}
+            onClick={(e) => { if (e.target === e.currentTarget) setShowMobileDialog(false); }}
+          >
+            <motion.div
+              initial={{ y: 60, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 60, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 280, damping: 30 }}
+              className="w-full max-w-sm rounded-2xl p-6 bg-white"
+              style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}
+            >
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-amber-100">
+                  <Phone className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-[#3B2A25]" style={{ fontSize: '1rem' }}>Enter your mobile number</h2>
+                  <p className="text-xs mt-0.5 text-[#6B5B55]">The admin will verify this at the voter desk</p>
+                </div>
+              </div>
+              <input
+                type="tel"
+                inputMode="numeric"
+                placeholder="e.g. 9876543210"
+                value={mobileNumber}
+                onChange={(e) => { setMobileNumber(e.target.value.replace(/[^\d+\s]/g, '')); setMobileError(''); }}
+                className="w-full px-4 py-3 rounded-xl text-base font-mono outline-none mb-1 border"
+                style={{ borderColor: mobileError ? '#ef4444' : '#D6C7B4', letterSpacing: '0.06em' }}
+                autoFocus
+                onKeyDown={(e) => { if (e.key === 'Enter') handleConfirmMobile(); }}
+              />
+              {mobileError && <p className="text-xs mb-3 text-red-500">{mobileError}</p>}
+              <p className="text-xs mb-4 text-[#6B5B55]">Show this number on your phone when the admin asks. Vote is only counted once verified.</p>
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setShowMobileDialog(false)} disabled={isVoting}
+                  style={{ borderColor: '#D6C7B4', color: '#6B5B55' }}>Cancel</Button>
+                <Button className="flex-1 font-bold text-white bg-[#F59E0B] hover:bg-[#D97706] border-0"
+                  onClick={handleConfirmMobile} disabled={isVoting || !mobileNumber}>
+                  {isVoting ? <><Loader className="w-4 h-4 mr-1.5 animate-spin" /> Submitting…</> : 'Submit Vote'}
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Toaster />
     </div>

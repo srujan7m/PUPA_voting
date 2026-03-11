@@ -3,14 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Trophy, Users, Zap, Settings } from 'lucide-react';
+import { Users, Settings } from 'lucide-react';
+import Image from 'next/image';
 
 export default function Navbar() {
   const pathname = usePathname();
 
   const navLinks = [
     { href: '/teams', label: 'Teams', icon: Users },
-    { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { href: '/setup', label: 'Setup', icon: Settings },
   ];
 
@@ -29,21 +29,13 @@ export default function Navbar() {
     >
       {/* Logo */}
       <Link href="/" className="flex items-center gap-2 group no-underline">
-        <div
-          className="w-8 h-8 rounded-[9px] flex items-center justify-center"
-          style={{
-            background: 'linear-gradient(135deg, var(--amber-500), var(--amber-600))',
-            boxShadow: '0 2px 8px rgba(245,158,11,0.4)',
-          }}
-        >
-          <Zap className="w-4 h-4 text-white" />
-        </div>
-        <span
-          className="text-[1.15rem] tracking-[-0.01em] transition-colors group-hover:text-[var(--amber-600)]"
-          style={{ fontFamily: "'DM Serif Display', serif", color: 'var(--stone-900)' }}
-        >
-          PUPA Expo
-        </span>
+        <Image
+          src="/pupa-logo.png"
+          alt="PUPA Expo"
+          width={100}
+          height={36}
+          style={{ objectFit: 'contain' }}
+        />
       </Link>
 
       {/* Nav links */}

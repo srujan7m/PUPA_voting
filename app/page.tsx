@@ -41,9 +41,9 @@ export default function HomePage() {
           >
             PUPA{' '}
             <span className="bg-gradient-to-r from-amber-500 to-amber-700 bg-clip-text text-transparent">
-              Innovation
+              Makers
             </span>
-            <br />Expo
+            <br />Movement
           </motion.h1>
 
           {/* Subtitle */}

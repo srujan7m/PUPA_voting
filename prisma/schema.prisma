@@ -49,3 +49,16 @@ model Vote {
     @@unique([voterId, projectId])
     @@map("votes")
 }
+
+// Stores votes that are pending admin approval at the voter desk.
+// Only when an admin approves does the vote get committed to the Vote table.
+model PendingVote {
+    id           Int      @id @default(autoincrement())
+    mobileNumber String   @map("mobile_number") @db.VarChar(20)
+    teamIds      String   @map("team_ids") @db.Text // JSON array of project IDs
+    voterToken   String   @map("voter_token") @db.VarChar(255)
+    status       String   @default("PENDING") @db.VarChar(20) // PENDING | APPROVED | DENIED
+    createdAt    DateTime @default(now()) @map("created_at")
+
+    @@map("pending_votes")
+}
