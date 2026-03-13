@@ -14,7 +14,7 @@ if (!connectionString) {
 
 const pool = new Pool({ connectionString });
 const adapter = new PrismaNeon(pool);
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient({ adapter: adapter as any } as any);
 
 const teamData: { name: string; description: string; members: string }[] = [
   // AI/ML (24 teams)

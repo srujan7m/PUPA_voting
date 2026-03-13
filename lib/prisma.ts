@@ -24,15 +24,17 @@ const neonPool =
 
 const adapter = new PrismaNeon(neonPool);
 
+const prismaOptions = {
+  adapter: adapter as any,
+  log:
+    process.env.NODE_ENV === 'development'
+      ? ['query', 'error', 'warn']
+      : ['error'],
+};
+
 export const prisma =
   globalForPrisma.prisma ??
-  new PrismaClient({
-    adapter,
-    log:
-      process.env.NODE_ENV === 'development'
-        ? ['query', 'error', 'warn']
-        : ['error'],
-  });
+  new PrismaClient(prismaOptions as any);
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
