@@ -402,7 +402,7 @@ export default function SetupPage() {
                         )}
                       </button>
                       <p className="text-xs mt-1.5 text-center" style={{ color: 'var(--stone-400)' }}>
-                        JPG, PNG, WebP, GIF, AVIF · max 20 MB each
+                        JPG, PNG, WebP, GIF, AVIF · max 5 MB each
                       </p>
                     </>
                   )}

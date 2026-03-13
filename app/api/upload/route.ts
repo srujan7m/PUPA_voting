@@ -7,7 +7,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
-const MAX_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB raw input limit (we compress output to ~20 KB)
+const MAX_SIZE_BYTES = 5 * 1024 * 1024;  // 5 MB raw input limit (we compress output to ~20 KB)
 const TARGET_SIZE_BYTES = 20 * 1024;     // 20 KB output target
 const MAX_DIMENSION = 800;               // max width/height before quality tuning
 
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     // Validate raw input size (sanity guard; actual output is compressed)
     if (file.size > MAX_SIZE_BYTES) {
       return NextResponse.json(
-        { error: 'File too large. Maximum raw size is 20 MB.' },
+        { error: 'File too large. Maximum raw size is 5 MB.' },
         { status: 400 }
       );
     }
