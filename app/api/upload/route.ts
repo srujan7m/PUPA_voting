@@ -107,17 +107,27 @@ export async function POST(request: NextRequest) {
     const filename = `${Date.now()}-${crypto.randomUUID()}.jpg`;
 
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
 
-    // Ensure the resolved path is still inside uploadDir (guard against traversal)
-    const filePath = path.resolve(uploadDir, filename);
-    if (!filePath.startsWith(path.resolve(uploadDir))) {
-      return NextResponse.json({ error: 'Invalid filename.' }, { status: 400 });
+    try {
+      await mkdir(uploadDir, { recursive: true });
+
+      // Ensure the resolved path is still inside uploadDir (guard against traversal)
+      const filePath = path.resolve(uploadDir, filename);
+      if (!filePath.startsWith(path.resolve(uploadDir))) {
+        return NextResponse.json({ error: 'Invalid filename.' }, { status: 400 });
+      }
+
+      await writeFile(filePath, buffer);
+      return NextResponse.json({ url: `/uploads/${filename}` }, { status: 201 });
+    } catch (fsError: any) {
+      // Serverless platforms can have read-only filesystems (EROFS). In that
+      // case, return an inline data URL so the image can still be previewed/saved.
+      if (fsError?.code === 'EROFS') {
+        const dataUrl = `data:image/jpeg;base64,${buffer.toString('base64')}`;
+        return NextResponse.json({ url: dataUrl }, { status: 201 });
+      }
+      throw fsError;
     }
-
-    await writeFile(filePath, buffer);
-
-    return NextResponse.json({ url: `/uploads/${filename}` }, { status: 201 });
   } catch (error: any) {
     console.error('[POST /api/upload]', error);
     return NextResponse.json({ error: error?.message || 'Upload failed.' }, { status: 500 });
