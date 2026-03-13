@@ -33,7 +33,7 @@ export default function TeamCard({ team, onClick, votedTeamIds = [], selectedIds
   const hasVoted = votedTeamIds.length > 0;
   const isDisabled = hasVoted && !isVoted;
   const num = team.team_number || team.id;
-  const displayName = team.team_name || `Team #${num}`;
+  const displayName = team.team_name || `Stall #${num}`;
   const primaryImage = (team.stall_images && team.stall_images.length > 0)
     ? team.stall_images[0]
     : team.image_url;

@@ -185,8 +185,8 @@ export default function SetupPage() {
                   }}
                 >
                   {selectedTeam
-                    ? `#${selectedTeam.team_number || selectedTeam.id}${selectedTeam.team_name ? ` — ${selectedTeam.team_name}` : ''}`
-                    : 'Choose your team…'}
+                    ? `Stall #${selectedTeam.team_number || selectedTeam.id}`
+                    : 'Choose your stall…'}
                   <ChevronDown className="w-4 h-4 shrink-0 ml-2" style={{ color: 'var(--stone-400)' }} />
                 </button>
 
@@ -213,8 +213,8 @@ export default function SetupPage() {
                           style={{ color: 'var(--stone-700)' }}
                         >
                           <span className="font-bold" style={{ color: 'var(--amber-600)' }}>
-                            #{t.team_number || t.id}
-                          </span>{t.team_name ? ` — ${t.team_name}` : ''}
+                            Stall #{t.team_number || t.id}
+                          </span>
                         </button>
                       ))}
                     </motion.div>
@@ -402,7 +402,7 @@ export default function SetupPage() {
                         )}
                       </button>
                       <p className="text-xs mt-1.5 text-center" style={{ color: 'var(--stone-400)' }}>
-                        JPEG, PNG, WebP or GIF · max 5 MB each
+                        JPG, PNG, WebP, GIF, AVIF · max 20 MB each
                       </p>
                     </>
                   )}

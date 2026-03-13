@@ -1,6 +1,20 @@
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+import { PrismaNeon } from '@prisma/adapter-neon';
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import { PrismaClient } from '@prisma/client';
+import ws from 'ws';
+
+neonConfig.webSocketConstructor = ws;
+
+const connectionString = process.env.DATABASE_URL ?? process.env.DIRECT_URL;
+
+if (!connectionString) {
+  throw new Error('DATABASE_URL or DIRECT_URL must be set');
+}
+
+const pool = new Pool({ connectionString });
+const adapter = new PrismaNeon(pool);
+const prisma = new PrismaClient({ adapter });
 
 const teamData: { name: string; description: string; members: string }[] = [
   // AI/ML (24 teams)
@@ -201,18 +215,19 @@ const teamData: { name: string; description: string; members: string }[] = [
 async function main() {
   console.log('Seeding 180 teams...');
 
-  // Clear existing projects and votes to avoid duplicates
+  // Clear all voting/test data so production starts clean.
   await prisma.vote.deleteMany();
+  await prisma.pendingVote.deleteMany();
+  await prisma.voter.deleteMany();
+
+  // Recreate teams from scratch.
   await prisma.project.deleteMany();
 
-  const inserts = teamData.map((t, i) =>
+  const inserts = Array.from({ length: teamData.length }, (_, i) =>
     prisma.project.create({
       data: {
         teamNumber: i + 1,
-        name: t.name,
-        teamName: `Team ${String(i + 1).padStart(3, '0')} — ${t.name}`,
-        description: t.description,
-        teamMembers: t.members,
+        name: `Stall #${i + 1}`,
         voteCount: 0,
       },
     })
@@ -229,4 +244,7 @@ main()
     console.error(e);
     process.exit(1);
   })
-  .finally(() => prisma.$disconnect());
+  .finally(async () => {
+    await prisma.$disconnect();
+    await pool.end();
+  });

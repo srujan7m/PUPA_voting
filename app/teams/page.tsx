@@ -10,7 +10,7 @@ import { fetchTeams, fetchVoteStatus, submitPendingVote } from '@/lib/api';
 import { Users, CheckCircle, Loader2, ThumbsUp, Clock, Phone, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const MAX_VOTES = 3;
+const MAX_VOTES = 1;
 
 type VoteStatus = 'none' | 'pending' | 'approved' | 'denied';
 
@@ -128,7 +128,7 @@ export default function TeamsPage() {
                 ? '⏳ Your vote is pending admin verification at the desk'
                 : voteStatus === 'denied'
                 ? '✗ Your vote was not approved — you may vote again'
-                : `${teams.length} teams · click any card to view details and select up to ${MAX_VOTES} to vote for`}
+                : `${teams.length} stalls · click any card to view details and select 1 team to vote for`}
             </p>
           </div>
         </div>
@@ -293,11 +293,11 @@ export default function TeamsPage() {
               >
                 <div>
                   <p className="font-bold text-sm" style={{ color: 'var(--stone-800)' }}>
-                    {selectedIds.length} of {MAX_VOTES} votes selected
+                    {selectedIds.length} of {MAX_VOTES} vote selected
                   </p>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--stone-500)' }}>
                     {selectedIds.length < MAX_VOTES
-                      ? `You can still add ${MAX_VOTES - selectedIds.length} more team${MAX_VOTES - selectedIds.length !== 1 ? 's' : ''}`
+                      ? 'Select one team to continue'
                       : 'Ready to submit — or keep browsing!'}
                   </p>
                 </div>
@@ -308,7 +308,7 @@ export default function TeamsPage() {
                   style={{ background: 'linear-gradient(135deg, var(--amber-500), var(--amber-600))', border: 'none', boxShadow: 'var(--shadow-amber)' }}
                 >
                   <ThumbsUp className="w-4 h-4" />
-                  Submit {selectedIds.length} Vote{selectedIds.length !== 1 ? 's' : ''}
+                  Submit Vote
                 </Button>
               </div>
             </div>

@@ -3,8 +3,7 @@ import { z } from 'zod';
 export const voteSchema = z.object({
   teamIds: z
     .array(z.number().int().positive('Invalid team ID'))
-    .min(1, 'Select at least one team to vote for.')
-    .max(3, 'You can vote for at most 3 teams.')
+    .length(1, 'You can vote for only one team.')
     .refine((ids) => new Set(ids).size === ids.length, 'Duplicate team selections are not allowed.'),
 });
 

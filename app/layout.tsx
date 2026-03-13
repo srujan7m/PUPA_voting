@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen antialiased" style={{ fontFamily: "'DM Sans', sans-serif", background: 'var(--cream)', color: 'var(--stone-800)' }}>
         <Navbar />
         <main>{children}</main>

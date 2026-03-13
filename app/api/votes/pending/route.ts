@@ -5,8 +5,7 @@ import { z } from 'zod';
 const pendingVoteSchema = z.object({
   teamIds: z
     .array(z.number().int().positive())
-    .min(1, 'Select at least one team.')
-    .max(3, 'You can vote for at most 3 teams.')
+    .length(1, 'You can vote for only one team.')
     .refine((ids) => new Set(ids).size === ids.length, 'Duplicate team selections.'),
   mobileNumber: z
     .string()
@@ -42,7 +41,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: msg }, { status: 409 });
     }
 
-    // Confirm all selected teams exist
+    // Confirm selected team exists
     const projects = await prisma.project.findMany({
       where: { id: { in: teamIds } },
       select: { id: true },

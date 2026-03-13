@@ -12,7 +12,9 @@
     "prisma:migrate": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "prisma:seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts",
-    "db:seed": "npx prisma db seed"
+    "prisma:clear": "node prisma/clear.js",
+    "db:seed": "npx prisma db seed",
+    "db:clear": "pnpm run prisma:clear"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
@@ -21,6 +23,7 @@
     "@clerk/nextjs": "^7.0.1",
     "@hookform/resolvers": "^3.9.1",
     "@neondatabase/serverless": "^0.9.5",
+    "@prisma/adapter-neon": "5.22.0",
     "@prisma/client": "^5.22.0",
     "@radix-ui/react-accordion": "1.2.12",
     "@radix-ui/react-alert-dialog": "1.1.15",
@@ -73,6 +76,7 @@
     "sonner": "^1.7.1",
     "tailwind-merge": "^3.3.1",
     "vaul": "^1.1.2",
+    "ws": "^8.19.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
@@ -80,6 +84,7 @@
     "@types/node": "^22",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
+    "@types/ws": "^8.18.1",
     "postcss": "^8.5",
     "prisma": "^5.22.0",
     "tailwindcss": "^4.2.0",

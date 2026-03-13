@@ -34,7 +34,7 @@ export default function TeamPreviewModal({
   votedTeamIds,
   selectedIds,
   onToggleSelect,
-  maxVotes = 3,
+  maxVotes = 1,
 }: TeamPreviewModalProps) {
   const [imgIdx, setImgIdx] = useState(0);
 
@@ -44,7 +44,7 @@ export default function TeamPreviewModal({
   if (team.stall_images && team.stall_images.length > 0) images.push(...team.stall_images);
   else if (team.image_url) images.push(team.image_url);
 
-  const displayName = team.team_name || `Team #${team.team_number || team.id}`;
+  const displayName = team.team_name || `Stall #${team.team_number || team.id}`;
   const isVoted = votedTeamIds.includes(team.id);
   const isSelected = selectedIds.includes(team.id);
   const canAddMore = selectedIds.length < maxVotes;
@@ -235,8 +235,8 @@ export default function TeamPreviewModal({
                 ) : (
                   <><Plus className="w-4 h-4" />
                     {canAddMore
-                      ? `Add to votes (${selectedIds.length}/${maxVotes})`
-                      : 'Max 3 votes reached'}
+                      ? `Add to vote (${selectedIds.length}/${maxVotes})`
+                      : 'Max 1 vote reached'}
                   </>
                 )}
               </Button>

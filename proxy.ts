@@ -6,5 +6,6 @@ export function proxy(_request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // Skip static assets so files under public/ (including /uploads) are served directly.
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|uploads/|.*\\..*).*)'],
 };
