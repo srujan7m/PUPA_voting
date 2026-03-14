@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(payload, {
       headers: {
-        'Cache-Control': 'private, max-age=120, stale-while-revalidate=240',
+        'Cache-Control': 'private, max-age=600, stale-while-revalidate=1200',
       },
     });
   } catch (error) {

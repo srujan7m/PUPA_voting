@@ -51,7 +51,7 @@ export default function AdminLeaderboardPage() {
 
   useEffect(() => {
     load();
-    const interval = setInterval(() => load(true), 120_000);
+    const interval = setInterval(() => load(true), 600_000);
     return () => clearInterval(interval);
   }, [load]);
 
@@ -127,7 +127,7 @@ export default function AdminLeaderboardPage() {
                   </span>
                 </div>
                 <p className="text-[0.85rem] mt-0.5" style={{ color: 'var(--stone-500)' }}>
-                  Live · auto-updates every 2 min
+                  Live · auto-updates every 10 min
                 </p>
               </div>
             </div>
